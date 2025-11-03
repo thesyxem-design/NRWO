@@ -22,11 +22,27 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
 
+    - name: Make gradlew executable
+      run: chmod +x gradlew
+
     - name: Build debug APK
       run: ./gradlew assembleDebug
+
+    - name: Rename APK for release
+      run: |
+        VERSION_NAME="v1.0"
+        OUTPUT_DIR=$(find app/build/outputs/apk -type d -name "debug" | head -n 1)
+        if [ -f "$OUTPUT_DIR/app-debug.apk" ]; then
+          mv "$OUTPUT_DIR/app-debug.apk" "$OUTPUT_DIR/NRWO-${VERSION_NAME}-debug.apk"
+        else
+          echo "⚠️ app-debug.apk not found — check build output path"
+          ls -R app/build/outputs/apk
+        fi
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: NRWO-debug-apk
-        path: app/build/outputs/apk/debug/app-debug.apk￼Enter
+        path: |
+          app/build/outputs/apk/**/*.apk
+          **/app/build/outputs/apk/**/*.apk
